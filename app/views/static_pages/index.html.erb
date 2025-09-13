@@ -1,6 +1,79 @@
 <div class="container">
+  <%# Normalize possibly-nil collections to arrays to avoid NoMethodError on .first/.any?/etc %>
+  <% todays_langs = Array(@todays_languages) %>
+  <% todays_editors = Array(@todays_editors) %>
+  <!-- Workspace Hero -->
+  <section class="hx-hero mt-6 mb-14">
+    <div class="hx-hero-grid">
+      <div class="hx-hero-main">
+        <% if current_user %>
+          <h1 class="hx-hero-title">Welcome back<span class="sr-only">,</span> <span class="hx-hero-wave" aria-hidden="true">👋</span></h1>
+          <p class="hx-hero-lead">Stay consistent. Track your flow. Build your streak.</p>
+          <div class="hx-cta-row">
+            <a href="#mini_leaderboard_container" class="btn btn-primary">Live stats</a>
+            <a href="#dashboard_container" class="btn btn-ghost">Dashboard</a>
+          </div>
+          <div class="hx-inline-chips" aria-label="today overview">
+            <div class="hx-chip">
+              <span class="hx-chip-value"><%= short_time_detailed @todays_duration %></span>
+              <span class="hx-chip-label">today logged</span>
+            </div>
+            <div class="hx-chip">
+              <span class="hx-chip-value"><%= todays_langs.first(2).join(', ') if todays_langs.any? %></span>
+              <span class="hx-chip-label">languages</span>
+            </div>
+            <div class="hx-chip">
+              <span class="hx-chip-value"><%= todays_editors.first if todays_editors.any? %></span>
+              <span class="hx-chip-label">editor</span>
+            </div>
+          </div>
+        <% else %>
+          <h1 class="hx-hero-title">See where your coding time really goes.</h1>
+          <p class="hx-hero-lead">Built by students for students. Yours first. Public when you want.</p>
+          <div class="hx-cta-row">
+            <a href="#signup" class="btn btn-primary">Get started</a>
+            <a href="<%= docs_path %>" class="btn btn-ghost">Docs</a>
+          </div>
+          <% if @home_stats&.[](:seconds_tracked) && @home_stats&.[](:users_tracked) %>
+            <% hours_total = (@home_stats[:seconds_tracked] / 3600.0).to_i %>
+            <% avg_per = @home_stats[:users_tracked] > 0 ? (hours_total / @home_stats[:users_tracked].to_f).round(1) : 0 %>
+            <div class="hx-inline-chips" aria-label="platform stats">
+              <div class="hx-chip">
+                <span class="hx-chip-value"><%= number_with_delimiter(hours_total) %>h</span>
+                <span class="hx-chip-label">tracked</span>
+              </div>
+              <div class="hx-chip">
+                <span class="hx-chip-value"><%= number_with_delimiter(@home_stats[:users_tracked]) %></span>
+                <span class="hx-chip-label">students</span>
+              </div>
+              <div class="hx-chip">
+                <span class="hx-chip-value"><%= avg_per %>h</span>
+                <span class="hx-chip-label">avg / user</span>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+      <div class="hx-hero-side">
+        <div class="hx-code-window" aria-live="polite" aria-label="recent activity snippet">
+          <div class="hx-code-window-bar">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot orange"></span>
+            <span class="hx-code-filename">session_stats.json</span>
+          </div>
+          <pre class="hx-code-block"><code id="live-snippet"><%= raw({
+            today: short_time_detailed(@todays_duration),
+            top_lang: (todays_langs.first || 'N/A'),
+            editors: todays_editors.first(2),
+            streak: current_user&.streak || nil
+          }.to_json) %></code></pre>
+        </div>
+        <p class="hx-side-note">Updates as you code • Private by default</p>
+      </div>
+    </div>
+  </section>
+
   <% if current_user&.trust_level == "red" %>
-    <div class="text-primary bg-red-500/10 border-2 border-red-500/20 p-4 text-center rounded-lg mb-4">
+    <div class="soft-card alert-red p-5 text-center mb-10">
       <div class="flex items-center justify-center">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M8 14.5a6.5 6.5 0 1 0 0-13a6.5 6.5 0 0 0 0 13M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m1-5a1 1 0 1 1-2 0a1 1 0 0 1 2 0m-.25-6.25a.75.75 0 0 0-1.5 0v3.5a.75.75 0 0 0 1.5 0z" clip-rule="evenodd" /></svg>
         <span class="text-3xl font-bold block ml-2">Hold up! Your account has been banned for suspicious activity.</span>
@@ -17,7 +90,7 @@
       <%= @flavor_text %>
     </p>
   </div>
-  <h1 class="font-bold mt-1 mb-1 text-5xl">
+  <h1 class="font-bold mt-1 mb-1 text-5xl hidden">
     <% if current_user %>
       Keep Track of <span class="text-primary">Your</span> Coding Time
     <% else %>
@@ -28,34 +101,41 @@
     <%= @usage_social_proof&.downcase %>
   </p>
   <% unless current_user %>
-    <p class="text-xl mt-2">
-      See which programming languages you use most and how productive you are. Free and works with over <%= link_to "75 code editors", docs_path + "#supported-editors" %>!
-    </p>
-
-    <% if @home_stats&.[](:seconds_tracked) && @home_stats&.[](:users_tracked) %>
-      <div>
-        <h2 class="text-3xl my-2">
-          Already tracking <span class="text-primary"><%= number_with_delimiter(@home_stats[:seconds_tracked] / 3600) %> <%= 'hour'.pluralize(@home_stats[:seconds_tracked] / 3600) %></span>
-          of coding across <span class="text-primary"><%= number_with_delimiter(@home_stats[:users_tracked]) %> <%= 'high schooler'.pluralize(@home_stats[:users_tracked]) %></span>
-          since <span class="text-primary">2025</span>.
-        </h2>
-      </div>
-
-      <div class="my-8">
-        <ul class="text-xl list-none p-0">
-          <li class="my-2">✅ <strong>100% Free</strong></li>
-          <li class="my-2">📊 <strong>75+ Editors</strong> - Works with <%= link_to "VS Code", doc_path("editors/vs-code") %>, <%= link_to "Vim", doc_path("editors/vim") %>, <%= link_to "Sublime", doc_path("editors/sublime-text") %> and <%= link_to "more", docs_path + "#supported-editors" %></li>
-          <li class="my-2">📡 <strong>Works Offline</strong></li>
-          <li class="my-2">🔒 <strong>Privacy First</strong> - Your data stays safe</li>
-          <li class="my-2">⚡ <strong>Real-time Stats</strong> - See your coding time instantly</li>
-          <li class="my-2">🏆 <strong>Leaderboards</strong> - Compare with other high schoolers</li>
+  <div class="soft-card p-8 mt-4" id="intro">
+      <p class="text-xl mt-0 mb-6 fade-reveal delay-[60ms]">
+        See which programming languages you use most and how productive you are. Free and works with over <%= link_to "75 code editors", docs_path + "#supported-editors" %>!
+      </p>
+      <% if @home_stats&.[](:seconds_tracked) && @home_stats&.[](:users_tracked) %>
+        <div class="stat-block fade-reveal delay-[120ms]">
+          <h2 class="text-3xl my-2 font-bold tracking-tight gradient-text-small">
+            Already tracking <span class="text-primary"><%= number_with_delimiter(@home_stats[:seconds_tracked] / 3600) %> <%= 'hour'.pluralize(@home_stats[:seconds_tracked] / 3600) %></span>
+            of coding across <span class="text-primary"><%= number_with_delimiter(@home_stats[:users_tracked]) %> <%= 'high schooler'.pluralize(@home_stats[:users_tracked]) %></span>
+            since <span class="text-primary">2025</span>.
+          </h2>
+          <div class="progress-outer mt-4">
+            <% hours = (@home_stats[:seconds_tracked] / 3600.0).to_i %>
+            <% pct = [[(hours / 1_000_000.0) * 100, 100].min, 0].max %>
+            <div class="progress-inner" style="--progress:<%= pct %>%"></div>
+            <div class="progress-glow"></div>
+          </div>
+          <p class="mt-2 text-sm text-gray-400 italic">Community goal: 1,000,000 hours — we're at <%= number_with_delimiter(hours) %>!</p>
+        </div>
+      <% end %>
+      <div class="my-10 feature-list-grid fade-reveal delay-[180ms]">
+        <ul class="feature-grid">
+          <li>✅ <strong>100% Free</strong></li>
+          <li>📊 <strong>75+ Editors</strong></li>
+          <li>📡 <strong>Works Offline</strong></li>
+          <li>🔒 <strong>Privacy First</strong></li>
+          <li>⚡ <strong>Real-time Stats</strong></li>
+          <li>🏆 <strong>Leaderboards</strong></li>
         </ul>
       </div>
-    <% end %>
+    </div>
   <% end %>
   <% if current_user %>
     <% if @show_wakatime_setup_notice %>
-      <div class="text-left my-8 flex flex-col">
+  <div class="text-left my-8 flex flex-col soft-card p-6 gap-2">
         <p class="mb-4 text-xl text-primary">
           Hello friend! Looks like you are new around here, let's get you set up so you can start tracking your coding time.
         </p>
@@ -97,52 +177,65 @@
         </div>
       </div>
     <% end %>
-    <p>
+  <p class="soft-card p-4 mt-6">
       <% if @show_logged_time_sentence %>
         You've logged
         <%= short_time_detailed @todays_duration %>
-        <% if @todays_languages.any? || @todays_editors.any? %>
+        <% if todays_langs.any? || todays_editors.any? %>
           across
-          <% if @todays_languages.any? %>
-            <% if @todays_languages.length >= 4 %>
-              <%= @todays_languages[0..1].join(", ") %> <span title="<%= @todays_languages[2..].join(", ") %>">(& <%= pluralize(@todays_languages.length - 2, 'other language') %>)</span>
+          <% if todays_langs.any? %>
+            <% if todays_langs.length >= 4 %>
+              <%= todays_langs[0..1].join(", ") %> <span title="<%= todays_langs[2..].join(", ") %>">(& <%= pluralize(todays_langs.length - 2, 'other language') %>)</span>
             <% else %>
-              <%= @todays_languages.to_sentence %>
+              <%= todays_langs.to_sentence %>
             <% end %>
           <% end %>
-          <% if @todays_languages.any? && @todays_editors.any? %>
+          <% if todays_langs.any? && todays_editors.any? %>
             using
           <% end %>
-          <% if @todays_editors.any? %>
-            <%= @todays_editors.to_sentence %>
+          <% if todays_editors.any? %>
+            <%= todays_editors.to_sentence %>
           <% end %>
         <% end %>
       <% else %>
         No time logged today... but you can change that!
       <% end %>
     </p>
-    <%= turbo_frame_tag "mini_leaderboard", src: mini_leaderboard_static_pages_path do %>
-      <%= render "leaderboards/mini_leaderboard_loading" %>
-    <% end %>
-    <%= turbo_frame_tag "filterable_dashboard", src: filterable_dashboard_static_pages_path do %>
-      <span>Loading...</span>
-    <% end %>
-    <%= turbo_frame_tag "activity_graph", src: activity_graph_static_pages_path do %>
-      <span>Loading...</span>
-    <% end %>
+    <div class="grid gap-8 my-10">
+      <div class="soft-card p-4" id="mini_leaderboard_container">
+        <h3 class="m-0 mb-3 text-xl font-semibold tracking-wide">Mini Leaderboard</h3>
+        <%= turbo_frame_tag "mini_leaderboard", src: mini_leaderboard_static_pages_path do %>
+          <%= render "leaderboards/mini_leaderboard_loading" %>
+        <% end %>
+      </div>
+  <div class="soft-card p-4" id="dashboard_container">
+        <h3 class="m-0 mb-3 text-xl font-semibold tracking-wide">Dashboard</h3>
+        <%= turbo_frame_tag "filterable_dashboard", src: filterable_dashboard_static_pages_path do %>
+          <span>Loading...</span>
+        <% end %>
+      </div>
+  <div class="soft-card p-4" id="activity_container">
+        <h3 class="m-0 mb-3 text-xl font-semibold tracking-wide">Activity Graph</h3>
+        <%= turbo_frame_tag "activity_graph", src: activity_graph_static_pages_path do %>
+          <span>Loading...</span>
+        <% end %>
+      </div>
+    </div>
   <% else %>
     <% if @leaderboard %>
-      <h3>Today's Top Hack Clubbers</h3>
-      <%= render "leaderboards/mini_leaderboard", leaderboard: @leaderboard, current_user: nil %>
+      <div class="soft-card p-6" id="top_today">
+        <h3 class="m-0 mb-4 text-2xl font-bold tracking-tight gradient-text-small">Today's Top Hack Clubbers</h3>
+        <%= render "leaderboards/mini_leaderboard", leaderboard: @leaderboard, current_user: nil %>
+      </div>
     <% end %>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-8 items-center">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-12 items-start" id="signup">
       <div class="w-full relative pb-[56.25%] h-0 overflow-hidden">
         <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/eFVA_ZWnzDk?si=TcEVwiigFZh0Sp_Z&loop=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen class="absolute top-0 left-0 w-full h-full rounded-lg"></iframe>
       </div>
 
       <div class="flex justify-center items-center">
-        <div class="max-w-md mx-auto text-center w-full">
+  <div class="max-w-md mx-auto text-center w-full soft-card p-8">
           <%= link_to "Sign in with Hack Club Slack", slack_auth_path, class: "inline-block px-6 py-3 rounded text-white font-bold cursor-pointer border-none w-full my-2 bg-primary" %>
 
           <div class="my-4 text-gray-300 relative">
@@ -158,7 +251,7 @@
             <%= submit_tag "Send sign-in link", class: "inline-block px-6 py-3 rounded text-white font-medium cursor-pointer border-none w-full my-2 bg-blue-600", data: { disable_with: "Sending..." } %>
           <% end %>
           <% if params[:sign_in_email] %>
-            <div class="text-green-500 mt-4">
+            <div class="mt-4" style="color:#ff6a00">
               Check your email for a sign-in link!
             </div>
             <% dev_tool do %>
