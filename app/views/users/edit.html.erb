@@ -165,7 +165,7 @@
           <p class="text-gray-300 text-sm">This is used to show your active projects on the leaderboard & current hacking activity on the dashboard.</p>
           <% if @user.github_uid.present? %>
             <div class="flex items-center gap-2 p-3 bg-gray-800 border border-gray-600 rounded">
-              <span class="text-green-400">✅</span>
+              <span class="text-primary">✅</span>
               <span class="text-gray-200 text-sm">Connected: <%= link_to "@#{h(@user.github_username)}", "https://github.com/#{h(@user.github_username)}", target: "_blank", class: "text-primary hover:text-primary/80 underline" %></span>
             </div>
             <%= link_to "Relink GitHub Account", github_auth_path, data: { turbo: "false" }, class: "inline-flex items-center gap-2 px-3 py-2 bg-primary text-white text-sm font-medium rounded transition-colors duration-200" %>
@@ -440,8 +440,8 @@
           <% dev_tool do %>
             <div class="p-6 bg-gray-800 border border-gray-600 rounded">
               <div class="flex items-center gap-3 mb-3">
-                <div class="p-2 bg-green-600/10 rounded">
-                  <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <div class="p-2 rounded" style="background:rgba(255,106,0,0.12);">
+                  <svg class="w-4 h-4" style="color:#ff6a00" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
                 </div>
@@ -459,8 +459,9 @@
                 </div>
 
                 <div class="flex gap-3">
-                  <%= form.submit "Import Heartbeats", 
-                      class: "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-medium transition-colors inline-flex items-center gap-2",
+          <%= form.submit "Import Heartbeats", 
+            class: "text-white px-4 py-2 rounded font-medium transition-colors inline-flex items-center gap-2",
+            style: "background:#ff6a00;" ,
                       data: { confirm: "Are you sure you want to import heartbeats? This will add new data to your account." } %>
                 </div>
               <% end %>

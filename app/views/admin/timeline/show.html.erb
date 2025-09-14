@@ -181,7 +181,7 @@
               <div>
                 <%= link_to "Git", user.github_profile_url,
                 target: "_blank",
-                class: "text-xs text-green-400 hover:text-green-300 underline" %>
+                class: "text-xs text-primary hover:text-orange underline" %>
               </div>
               <% end %>
               <div>
@@ -195,7 +195,7 @@
               </div>
               <% end %>
             </div>
-            <div class="text-sm font-medium mb-1 <%= total_coded_time_seconds && total_coded_time_seconds > 0 ? 'text-green-300' : 'text-gray-400' %>">
+            <div class="text-sm font-medium mb-1 <%= total_coded_time_seconds && total_coded_time_seconds > 0 ? 'text-primary' : 'text-gray-400' %>">
               <%= total_coded_time_seconds && total_coded_time_seconds > 0 ? "#{short_time_simple(total_coded_time_seconds)} coded" : "No time coded" %>
             </div>
 
@@ -325,7 +325,7 @@
              title="<%= commit[:message] %>"
              class="absolute z-20 bg-darker text-white rounded-full px-2 py-1 text-xs hover:bg-gray-800 transition-colors"
              style="left: <%= pill_left_px %>px; top: <%= commit_top_px %>px; transform: translateX(-50%);">
-            <span class="<%= commit[:additions].to_i > 0 ? 'text-green-400 font-semibold' : '' %>">+<%= commit[:additions] %></span>
+            <span class="<%= commit[:additions].to_i > 0 ? 'text-primary font-semibold' : '' %>">+<%= commit[:additions] %></span>
             /
             <span class="<%= commit[:deletions].to_i > 0 ? 'text-red-400 font-semibold' : '' %>">-<%= commit[:deletions] %></span>
           </a>

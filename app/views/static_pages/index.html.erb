@@ -107,10 +107,10 @@
       </p>
       <% if @home_stats&.[](:seconds_tracked) && @home_stats&.[](:users_tracked) %>
         <div class="stat-block fade-reveal delay-[120ms]">
-          <h2 class="text-3xl my-2 font-bold tracking-tight gradient-text-small">
-            Already tracking <span class="text-primary"><%= number_with_delimiter(@home_stats[:seconds_tracked] / 3600) %> <%= 'hour'.pluralize(@home_stats[:seconds_tracked] / 3600) %></span>
-            of coding across <span class="text-primary"><%= number_with_delimiter(@home_stats[:users_tracked]) %> <%= 'high schooler'.pluralize(@home_stats[:users_tracked]) %></span>
-            since <span class="text-primary">2025</span>.
+          <h2 class="text-3xl my-2 font-bold tracking-tight duo-accent">
+            Already <span class="alt">tracking</span> <span><%= number_with_delimiter(@home_stats[:seconds_tracked] / 3600) %> <%= 'hour'.pluralize(@home_stats[:seconds_tracked] / 3600) %></span>
+            of <span class="alt">coding</span> across <span><%= number_with_delimiter(@home_stats[:users_tracked]) %> <%= 'high schooler'.pluralize(@home_stats[:users_tracked]) %></span>
+            since <span class="alt">2025</span>.
           </h2>
           <div class="progress-outer mt-4">
             <% hours = (@home_stats[:seconds_tracked] / 3600.0).to_i %>
@@ -224,7 +224,7 @@
   <% else %>
     <% if @leaderboard %>
       <div class="soft-card p-6" id="top_today">
-        <h3 class="m-0 mb-4 text-2xl font-bold tracking-tight gradient-text-small">Today's Top Hack Clubbers</h3>
+  <h3 class="m-0 mb-4 text-2xl font-bold tracking-tight duo-accent">Today's <span class="alt">Top</span> Hack Clubbers</h3>
         <%= render "leaderboards/mini_leaderboard", leaderboard: @leaderboard, current_user: nil %>
       </div>
     <% end %>
@@ -251,7 +251,7 @@
             <%= submit_tag "Send sign-in link", class: "inline-block px-6 py-3 rounded text-white font-medium cursor-pointer border-none w-full my-2 bg-blue-600", data: { disable_with: "Sending..." } %>
           <% end %>
           <% if params[:sign_in_email] %>
-            <div class="mt-4" style="color:#ff6a00">
+            <div class="mt-4 text-orange">
               Check your email for a sign-in link!
             </div>
             <% dev_tool do %>
